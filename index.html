@@ -1,0 +1,351 @@
+Berikut adalah versi terbaru dari website Kedai Duo Bocah dengan desain yang disesuaikan sesuai permintaanmu. Saya telah menerapkan:
+
+- **Skema Warna Biru-Coklat**:
+  - **Biru** (utama untuk segar/minuman: #007BFF biru tua, #A8DADC biru muda) digunakan untuk header, nav, minuman section, dan elemen segar.
+  - **Coklat** (untuk hangat/gorengan: #8B4513 coklat tua, #D2B48C coklat muda) digunakan untuk gorengan section, tombol, dan accent.
+  - Background body: Gradient halus dari biru muda ke coklat muda untuk nuansa tenang dan earthy.
+  - Efek hover: Glow biru-coklat untuk konsistensi.
+  - Desain tetap modern, responsif, dengan animasi fade-in, shimmer, dan pulse pada tombol.
+
+- **Kontak Update**:
+  - Tanpa alamat.
+  - Contact Person: 0858 0616 3574 & 0896 8114 3661 (ditampilkan jelas).
+  - WhatsApp: Link ke nomor pertama (0858 0616 3574) untuk tombol pesan otomatis. Kedua nomor juga bisa diklik.
+  - IG: @teman_sebangku (link ke https://instagram.com/teman_sebangku).
+
+- **Gambar Setiap Menu**:
+  - Setiap item menu sekarang punya gambar unik dari Unsplash (gratis, high-quality, relevan dengan produk Indonesia/sejenis). Saya pilih gambar yang mendekati: gorengan lokal, susu kedelai, es teh/jeruk, dan es campur untuk Pop Ice. Gambar dioptimasi dengan `loading="lazy"` untuk performa cepat. Jika tidak load (karena jaringan), ganti dengan upload foto asli ke ImgBB atau sejenisnya.
+
+- **Menu Lain**:
+  - Pop Ice tetap aneka varian dengan harga Rp 4.000 (seperti permintaan sebelumnya).
+  - Harga lainnya tidak berubah.
+
+Copy-paste kode ini ke file `index.html` dan buka di browser. Website siap pakai dan mobile-friendly!
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kedai Duo Bocah - Minuman Segar & Gorengan Legendaris</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #A8DADC 0%, #D2B48C 50%, #DEB887 100%);
+            overflow-x: hidden;
+        }
+        header {
+            background: linear-gradient(rgba(0, 123, 255, 0.9), rgba(139, 69, 19, 0.8)), url('https://images.unsplash.com/photo-1551028719-00167b16eac5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            color: white;
+            text-align: center;
+            padding: 120px 20px;
+            position: relative;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+        }
+        header h1 {
+            font-size: 3.5em;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+        header p {
+            font-size: 1.3em;
+            margin: 15px 0;
+            position: relative;
+            z-index: 1;
+        }
+        nav {
+            background: linear-gradient(45deg, #007BFF, #8B4513);
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 25px;
+            font-weight: bold;
+            transition: color 0.3s, transform 0.3s;
+        }
+        nav a:hover {
+            color: #FFD700;
+            transform: scale(1.1);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        section {
+            padding: 60px 0;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        h2 {
+            text-align: center;
+            font-size: 2.8em;
+            margin-bottom: 40px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .menu-category {
+            margin-bottom: 60px;
+        }
+        .menu-category h3 {
+            text-align: center;
+            font-size: 2.2em;
+            margin-bottom: 25px;
+        }
+        .menu-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 35px 0;
+        }
+        .menu-item {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+        .menu-item.goreng { border-color: #8B4513; }
+        .menu-item.sari { border-color: #007BFF; }
+        .menu-item.minum { border-color: #A8DADC; }
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            transition: left 0.6s;
+        }
+        .menu-item:hover::before {
+            left: 100%;
+        }
+        .menu-item:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+        }
+        .menu-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .menu-item:hover img {
+            transform: scale(1.05);
+        }
+        .menu-item h3 {
+            color: #333;
+            font-size: 1.6em;
+            margin-bottom: 12px;
+        }
+        .menu-item p {
+            color: #666;
+            margin-bottom: 18px;
+        }
+        .price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 18px;
+        }
+        .varian {
+            background: linear-gradient(45deg, #A8DADC, #D2B48C);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 0.95em;
+            color: #444;
+        }
+        button {
+            background: linear-gradient(45deg, #007BFF, #8B4513);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+        }
+        button:hover {
+            background: linear-gradient(45deg, #8B4513, #007BFF);
+            transform: scale(1.08);
+            animation: none;
+        }
+        .about, .contact {
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            margin: 20px 0;
+        }
+        .contact p {
+            margin: 12px 0;
+            font-size: 1.2em;
+        }
+        .contact a {
+            color: #007BFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        footer {
+            background: linear-gradient(45deg, #007BFF, #8B4513);
+            color: white;
+            text-align: center;
+            padding: 25px;
+            margin-top: 60px;
+        }
+        footer a {
+            color: #D2B48C;
+            margin: 0 15px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        footer a:hover {
+            color: #FFD700;
+        }
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5em; }
+            header { padding: 80px 20px; }
+            nav a { margin: 0 15px; font-size: 0.95em; }
+            .menu-section { grid-template-columns: 1fr; gap: 20px; }
+            h2 { font-size: 2.2em; }
+            .menu-item { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🍹 Kedai Duo Bocah 🍟</h1>
+        <p>🌊 Segarnya Sari Kedelai Varian Lengkap & Gorengan Renyah Mulai Rp1.000! Rasa Hangat dalam Warna Biru-Coklat! ☕</p>
+    </header>
+
+    <nav>
+        <a href="#menu">Menu</a>
+        <a href="#tentang">Tentang Kami</a>
+        <a href="#kontak">Kontak</a>
+    </nav>
+
+    <div class="container">
+        <section id="menu">
+            <h2>🍽️ Menu Lezat & Hangat Kami</h2>
+            
+            <!-- Gorengan Section -->
+            <div class="menu-category">
+                <h3 style="color: #8B4513;">🥟 Gorengan Renyah ☕</h3>
+                <div class="menu-section">
+                    <div class="menu-item goreng">
+                        <img src="https://images.unsplash.com/photo-1628258334164-338b6c7a8c3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Tahu Isi" loading="lazy">
+                        <h3>Tahu Isi</h3>
+                        <p>Tahu goreng isi sayur segar, renyah di luar, lembut di dalam. Gurih banget!</p>
+                        <div class="price">Rp 1.000 / pcs</div>
+                        <button onclick="pesan('Tahu Isi - Rp1.000/pcs')">Pesan Sekarang</button>
+                    </div>
+                    <div class="menu-item goreng">
+                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Bakwan" loading="lazy">
+                        <h3>Bakwan Sayur</h3>
+                        <p>Bakwan krispi dengan campuran sayur dan udang kecil. Camilan favorit!</p>
+                        <div class="price">Rp 1.000 / pcs</div>
+                        <button onclick="pesan('Bakwan - Rp1.000/pcs')">Pesan Sekarang</button>
+                    </div>
+                    <div class="menu-item goreng">
+                        <img src="https://images.unsplash.com/photo-1603048297194-9e2c5a7b5d17?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Ote-Ote" loading="lazy">
+                        <h3>Ote-Ote</h3>
+                        <p>Ote-ote pedas manis, gorengan khas Jawa Timur yang nagih abis.</p>
+                        <div class="price">Rp 1.000 / pcs</div>
+                        <button onclick="pesan('Ote-Ote - Rp1.000/pcs')">Pesan Sekarang</button>
+                    </div>
+                    <div class="menu-item goreng">
+                        <img src="https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Tempe" loading="lazy">
+                        <h3>Tempe Goreng</h3>
+                        <p>Tempe mendoan atau tepung, pilihan sehat dan gurih maksimal.</p>
+                        <div class="price">Rp 1.000 / pcs</div>
+                        <button onclick="pesan('Tempe - Rp1.000/pcs')">Pesan Sekarang</button>
+                    </div>
+                    <div class="menu-item goreng">
+                        <img src="https://images.unsplash.com/photo-1579586145086-f34f3b6b3e7d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Risol Mayo" loading="lazy">
+                        <h3>Risol Mayo</h3>
+                        <p>Risol isi keju dan mayones, creamy dan mewah untuk lidahmu.</p>
+                        <div class="price">Rp 3.000 / pcs</div>
+                        <button onclick="pesan('Risol Mayo - Rp3.000/pcs')">Pesan Sekarang</button>
+                    </div>
+                    <div class="menu-item goreng">
+                        <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3133?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Sosis Solo" loading="lazy">
+                        <h3>Sosis Solo</h3>
+                        <p>Sosis raksasa isi telur dan bumbu, goreng crispy super lezat.</p>
+                        <div class="price">Rp 3.000 / pcs</div>
+                        <button onclick="pesan('Sosis Solo - Rp3.000/pcs')">Pesan Sekarang</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sari Kedelai Section -->
+            <div class="menu-category">
+                <h3 style="color: #007BFF;">🥛 Sari Kedelai Premium 🌊</h3>
+                <div class="menu-section">
+                    <div class="menu-item sari">
+                        <img src="https://images.unsplash.com/photo-1579449904980-828ba7c9975c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Sari Kedelai" loading="lazy">
+                        <h3>Sari Kedelai Varian</h3>
+                        <p>Minuman kedelai segar, hangat/dingin, kaya nutrisi. Pilih varian favoritmu!</p>
+                        <div class="varian">
+                            <strong>Varian:</strong> Original | Coklat | Strawberry | Melon | Jahe
+                        </div>
+                        <div class="price">Rp 1.000 - Rp 15.000 (tergantung ukuran & packaging)</div>
+                        <p style="font-size: 0.95em; color: #666;">Kecil (takeaway): Rp1.000 | Sedang (cup): Rp5.000 | Besar (botol): Rp10.000-15.000</p>
+                        <button onclick="pesan('Sari Kedelai Varian - Rp1.000-15.000')">Pesan Sekarang</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Minuman Lain Section -->
+            <div class="menu-category">
+                <h3 style="color: #A8DADC;">🧊 Minuman Segar Lainnya 💧</h3>
+                <div class="menu-section">
+                    <div class="menu-item minum">
+                        <img src="https://images.unsplash.com/photo-1627398246508-6de6d4e7a3e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Es Teh" loading="lazy">
+                        <h3>Es Teh Manis</h3>
+                        <p>Es teh segar dengan gula asli, perfect untuk cuaca panas.</p>
+                        <div class="price">Rp 3.000</div>
+                        <button onclick="pesan('
