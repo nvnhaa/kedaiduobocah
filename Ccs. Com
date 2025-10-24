@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Tabungan Barang</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f3f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      padding: 25px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    .saldo {
+      background: #007bff;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #3e8e41;
+    }
+
+    .riwayat {
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 15px;
+    }
+
+    .riwayat h3 {
+      margin-top: 0;
+      text-align: center;
+      color: #333;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    li {
+      background: #eef2f7;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .barang {
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .tanggal {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .hapusData {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .hapusData:hover {
+      background: #cc0000;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Aplikasi Tabungan Barang</h2>
+    <div class="saldo" id="saldo">Saldo: Rp 0</div>
+
+    <select id="aksi">
+      <option value="setor">Menabung</option>
+      <option value="tarik">Tarik Uang</option>
+    </select>
+
+    <input type="text" id="barang" placeholder="Nama Barang / Keperluan">
+    <input type="number" id="jumlah" placeholder="Masukkan jumlah (Rp)">
+    <button onclick="prosesTabungan()">Simpan Transaksi</button>
+
+    <div class="riwayat">
+      <h3>Riwayat Transaksi</h3>
+      <ul id="riwayatList"></ul>
+      <button class="hapusData" onclick="hapusSemua()">🗑 Hapus Semua Data</button>
+    </div>
+  </div>
+
+  <script>
+    let saldo = 0;
+    let riwayat = [];
+
+    // === MUAT DATA SAAT AWAL ===
+    window.onload = function() {
+      const dataSaldo = localStorage.getItem('saldo');
+      const dataRiwayat = localStorage.getItem('riwayat');
+      if (dataSaldo) saldo = parseFloat(dataSaldo);
+      if (dataRiwayat) riwayat = JSON.parse(dataRiwayat);
+      updateSaldo();
+      tampilkanRiwayat();
+    };
+
+    function formatRupiah(angka) {
+      return angka.toLocaleString('id-ID');
+    }
+
+    function simpanData() {
+      localStorage.setItem('saldo', saldo);
+      localStorage.setItem('riwayat', JSON.stringify(riwayat));
+    }
+
+    function prosesTabungan() {
+      const aksi = document.getElementById('aksi').value;
+      const barang = document.getElementById('barang').value.trim();
+      const jumlah = parseFloat(document.getElementById('jumlah').value);
+      const waktu = new Date().toLocaleString('id-ID');
+
+      if (barang === "" || isNaN(jumlah) || jumlah <= 0) {
+        alert("Isi nama barang dan jumlah dengan benar!");
+        return;
+      }
+
+      let keterangan = "";
+
+      if (aksi === "setor") {
+        saldo += jumlah;
+        keterangan = `[${waktu}] Menabung Rp ${formatRupiah(jumlah)} untuk ${barang}`;
+      } else if (aksi === "tarik") {
+        if (jumlah > saldo) {
+          alert("Saldo tidak cukup!");
+          return;
+        }
+        saldo -= jumlah;
+        keterangan = `[${waktu}] Tarik Rp ${formatRupiah(jumlah)} untuk ${barang}`;
+      }
+
+      riwayat.unshift(keterangan);
+      updateSaldo();
+      tampilkanRiwayat();
+      simpanData();
+
+      document.getElementById('barang').value = "";
+      document.getElementById('jumlah').value = "";
+    }
+
+    function updateSaldo() {
+      document.getElementById('saldo').innerText = "Saldo: Rp " + formatRupiah(saldo);
+    }
+
+    function tampilkanRiwayat() {
+      const list = document.getElementById('riwayatList');
+      list.innerHTML = "";
+      riwayat.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        list.appendChild(li);
+      });
+    }
+
+    function hapusSemua() {
+      if (confirm("Yakin ingin menghapus semua data tabungan?")) {
+        saldo = 0;
+        riwayat = [];
+        localStorage.clear();
+        updateSaldo();
+        tampilkanRiwayat();
+      }
+    }
+  </script>
+</body>
+</html>
