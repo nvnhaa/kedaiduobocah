@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kedai Gorengan Dua Bocah</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #ff6b35;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #ff6b35;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .menu-item img {
+            width: 150px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 20px;
+            border-radius: 8px;
+        }
+        .order-form {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ffeaa7;
+            border-radius: 8px;
+        }
+        .order-form label, .order-form select, .order-form input, .order-form button {
+            display: block;
+            margin: 10px 0;
+        }
+        .order-form button {
+            background-color: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .contact {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ffeaa7;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Selamat Datang di Kedai Gorengan Dua Bocah</h1>
+        <p>Gorengan Segar dan Minuman Segar untuk Anda!</p>
+    </header>
+
+    <div class="container">
+        <h2>Menu Gorengan</h2>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5723?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Ote Ote">
+            <div>
+                <h3>Ote Ote</h3>
+                <p>Harga: Rp 1.000 per pcs</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5724?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Tahu Isi">
+            <div>
+                <h3>Tahu Isi</h3>
+                <p>Harga: Rp 1.000 per pcs</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5725?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Tempe Menjes">
+            <div>
+                <h3>Tempe Menjes</h3>
+                <p>Harga: Rp 1.000 per pcs</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5726?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Bakwan">
+            <div>
+                <h3>Bakwan</h3>
+                <p>Harga: Rp 1.000 per pcs</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5727?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Sosis Solo">
+            <div>
+                <h3>Sosis Solo</h3>
+                <p>Harga: Rp 3.000 per pcs</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5728?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Risol Mayo">
+            <div>
+                <h3>Risol Mayo</h3>
+                <p>Harga: Rp 3.000 per pcs</p>
+            </div>
+        </div>
+
+        <h2>Minuman Segar</h2>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5729?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Es Teh">
+            <div>
+                <h3>Es Teh</h3>
+                <p>Harga: Rp 3.000</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5730?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Es Jeruk">
+            <div>
+                <h3>Es Jeruk</h3>
+                <p>Harga: Rp 3.000</p>
+            </div>
+        </div>
+
+        <h2>Sari Kedelai</h2>
+        <p>Varian: Jahe, Coklat, Stroberi, Melon, Original. Harga mulai Rp 1.000 sampai Rp 15.000 tergantung packaging.</p>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5733?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Sari Kedelai Jahe">
+            <div>
+                <h3>Sari Kedelai Jahe</h3>
+                <p>Harga: Rp 5.000 - Rp 10.000</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5732?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Sari Kedelai Coklat">
+            <div>
+                <h3>Sari Kedelai Coklat</h3>
+                <p>Harga: Rp 5.000 - Rp 12.000</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5731?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Sari Kedelai Stroberi">
+            <div>
+                <h3>Sari Kedelai Stroberi</h3>
+                <p>Harga: Rp 5.000 - Rp 15.000</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5734?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Sari Kedelai Melon">
+            <div>
+                <h3>Sari Kedelai Melon</h3>
+                <p>Harga: Rp 5.000 - Rp 10.000</p>
+            </div>
+        </div>
+        <div class="menu-item">
+            <img src="https://images.unsplash.com/photo-1551782450-17144efb5735?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=100" alt="Sari Kedelai Original">
+            <div>
+                <h3>Sari Kedelai Original</h3>
+                <p>Harga: Rp 1.000 - Rp 8.000</p>
+            </div>
+        </div>
+
+        <div class="order-form">
+            <h2>Pesan Sekarang</h2>
+            <form id="orderForm">
+                <label for="item">Pilih Item:</label>
+                <select id="item" required>
+                    <option value="">-- Pilih Item --</option>
+                    <option value="Ote Ote">Ote Ote (Rp 1.000)</option>
+                    <option value="Tahu Isi">Tahu Isi (Rp 1.000)</option>
+                    <option value="Tempe Menjes">Tempe Menjes (Rp 1.000)</option>
+                    <option value="Bakwan">Bakwan (Rp 1.000)</option>
+                    <option value="Sosis Solo">Sosis Solo (Rp 3.000)</option>
+                    <option value="Risol Mayo">Risol Mayo (Rp 3.000)</option>
+                    <option value="Es Teh">Es Teh (Rp 3.000)</option>
+                    <option value="Es Jeruk">Es Jeruk (Rp 3.000)</option>
+                    <option value="Sari Kedelai Jahe">Sari Kedelai Jahe (Rp 5.000-10.000)</option>
+                    <option value="Sari Kedelai Coklat">Sari Kedelai Coklat (Rp 5.000-12.000)</option>
+                    <option value="Sari Kedelai Stroberi">Sari Kedelai Stroberi (Rp 5.000-15.000)</option>
+                    <option value="Sari Kedelai Melon">Sari Kedelai Melon (Rp 5.000-10.000)</option>
+                    <option value="Sari Kedelai Original">Sari Kedelai Original (Rp 1.000-8.000)</option>
+                </select>
+                <label for="quantity">Jumlah:</label>
+                <input type="number" id="quantity" min="1" required>
+                <button type="submit">Pesan Sekarang</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="contact">
+        <h2>Hubungi Kami</h2>
+        <p>Febri: 0896 8114 3661</p>
+        <p>Niva Niha: 0858 0616 3574</p>
+        <p>Instagram: <a href="https://www.instagram.com/kedai_dua_bocah" target="_blank">@kedai_dua_bocah</a></p>
+    </div>
+
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const item = document.getElementById('item').value;
+            const quantity = document.getElementById('quantity').value;
+            const message = `Halo, saya ingin pesan ${quantity} ${item}.`;
+            const whatsappUrl = `https://wa.me/6289681143661?text=${encodeURIComponent(message)}`; // Nomor Febri
+            window.open(whatsappUrl, '_blank');
+        });
+    </script>
+</body>
+  </html>
+  
