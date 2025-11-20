@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Manajemen Pembayaran Siswa Baru dengan Insidental</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        h1, h2 { color: #333; }
+        form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #28a745; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        button:hover { background: #218838; }
+        .delete-btn { background: #dc3545; }
+        .delete-btn:hover { background: #c82333; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f2f2f2; }
+        .kekurangan { color: red; font-weight: bold; }
+        .total { color: green; font-weight: bold; }
+        .summary { background: #e9ecef; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
+        .muted { color: #555; font-size: .9rem; }
+    </style>
+</head>
+<body>
+    <h1>Manajemen Pembayaran Siswa Baru dengan Pembayaran Insidental</h1>
+    <p class="muted">Input data siswa, tambahkan pembayaran pokok dan insidental. Biaya pokok default: <strong>Rp 1.000.000</strong>. Klik "Export CSV" untuk unduh laporan.</p>
+
+    <div class="summary" aria-live="polite">
+        <h2>Ringkasan Total</h2>
+        <p id="total-siswa">Total Siswa: 0</p>
+        <p id="total-pembayaran">Total Pembayaran Masuk: Rp 0</p>
+        <p id="total-kekurangan">Total Kekurangan: Rp 0</p>
+        <button type="button" id="export-btn">Export CSV</button>
+    </div>
+
+    <form id="form-siswa">
+        <h2>Input Data Siswa Baru</h2>
+        <label for="nama">Nama Siswa:</label>
+        <input type="text" id="nama" required />
+
+        <label for="kelas">Kelas:</label>
+        <input type="text" id="kelas" required />
+
+        <button type="submit">Tambah Siswa</button>
+    </form>
+
+    <form id="form-pembayaran">
+        <h2>Tambah Pembayaran (Pokok atau Insidental)</h2>
+        <label for="siswa-select">Pilih Siswa:</label>
+        <select id="siswa-select" required>
+            <option value="">-- Pilih Siswa --</option>
+        </select>
+
+        <label for="jenis-pembayaran">Jenis Pembayaran:</label>
+        <select id="jenis-pembayaran" required>
+            <option value="pokok">Pokok (SPP, dll.)</option>
+            <option value="insidental">Insidental (Buku, Seragam, dll.)</option>
+        </select>
+
+        <label for="nama-pembayaran">Nama Pembayaran (mis: SPP Bulan 1 atau Buku Matematika):</label>
+        <input type="text" id="nama-pembayaran" required />
+
+        <label for="biaya">Biaya (Rp) - Untuk pokok, otomatis menggunakan biaya pokok default:</label>
+        <input type="number" id="biaya" min="0" step="1" required />
+
+        <label for="jumlah-bayar">Jumlah Dibayar (Rp):</label>
+        <input type="number" id="jumlah-bayar" min="0" step="1" required />
+
+        <button type="submit">Tambah Pembayaran</button>
+    </form>
+
+    <h2>Daftar Siswa dan Pembayaran</h2>
+    <div id="daftar-siswa" aria-live="polite">
+        <!-- Siswa dan pembayaran akan ditampilkan di sini -->
+    </div>
+
+    <script>
+        const biayaPokokDefault = 1000000; // Biaya pokok default (ubah sesuai kebutuhan)
+        let siswaData = JSON.parse(localStorage.getItem('siswaDataInsidental')) || [];
+
+        const siswaSelect = document.getElementById('siswa-select');
+        const formSiswa = document.getElementById('form-siswa');
+        const formPembayaran = document.getElementById('form-pembayaran');
+        const daftarSiswa = document.getElementById('daftar-siswa');
+        const jenisPembayaranEl = document.getElementById('jenis-pembayaran');
+        const biayaInput = document.getElementById('biaya');
+        const exportBtn = document.getElementById('export-btn');
+
+        // Utility: format rupiah
+        function formatRp(num) {
+            return (Number.isFinite(num) ? num : 0).toLocaleString('id-ID');
+        }
+
+        // Simpan ke localStorage
+        function saveData() {
+            localStorage.setItem('siswaDataInsidental', JSON.stringify(siswaData));
+        }
+
+        // Update ringkasan
+        function updateSummary() {
+            const totalSiswa = siswaData.length;
+            let totalPembayaran = 0;
+            let totalKekurangan = 0;
+            siswaData.forEach(siswa => {
+                siswa.pembayaran.forEach(p => {
+                    totalPembayaran += Number.isFinite(p.jumlahBayar) ? p.jumlahBayar : 0;
+                });
+                const totalBiaya = biayaPokokDefault + siswa.pembayaran
+                    .filter(p => p.jenis === 'insidental')
+                    .reduce((sum, p) => sum + (Number.isFinite(p.biaya) ? p.biaya : 0), 0);
+                const totalBayar = siswa.pembayaran.reduce((sum
