@@ -1,0 +1,523 @@
+from flask import Flask, render_template, request, jsonify
+import sqlite3
+from datetime import datetime
+
+app = Flask(__name__)
+DB_NAME = "database_toko.db"
+
+def init_db():
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        # Tabel Data Barang
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS barang (
+                barcode TEXT PRIMARY KEY,
+                nama TEXT NOT NULL,
+                harga_modal REAL NOT NULL,
+                harga_jual REAL NOT NULL,
+                stok INTEGER NOT NULL
+            )
+        ''')
+        # Tabel Riwayat Transaksi Penjualan
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS transaksi (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tanggal TEXT NOT NULL,
+                total_penjualan REAL NOT NULL,
+                total_laba REAL NOT NULL,
+                bayar REAL NOT NULL,
+                kembalian REAL NOT NULL
+            )
+        ''')
+        conn.commit()
+
+init_db()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/scan', methods=['POST'])
+def scan_barang():
+    data = request.json
+    barcode = data.get('barcode', '').strip()
+    
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM barang WHERE barcode = ?', (barcode,))
+        barang = cursor.fetchone()
+        
+        if not barang:
+            return jsonify({'success': False, 'message': 'Barang tidak ditemukan!'}), 404
+        
+        barcode_id, nama, modal, jual, stok = barang
+        if stok <= 0:
+            return jsonify({'success': False, 'message': f'Stok barang "{nama}" telah habis!'}), 400
+            
+        return jsonify({
+            'success': True,
+            'item': {
+                'barcode': barcode_id,
+                'nama': nama,
+                'harga_modal': modal,
+                'harga_jual': jual,
+                'stok': stok
+            }
+        })
+
+@app.route('/api/bayar', methods=['POST'])
+def proses_bayar():
+    data = request.json
+    items = data.get('items', [])
+    uang_bayar = float(data.get('bayar', 0))
+    
+    if not items:
+        return jsonify({'success': False, 'message': 'Keranjang belanja masih kosong!'}), 400
+        
+    total_jual = sum(item['harga_jual'] * item['qty'] for item in items)
+    total_laba = sum((item['harga_jual'] - item['harga_modal']) * item['qty'] for item in items)
+    
+    if uang_bayar < total_jual:
+        return jsonify({'success': False, 'message': 'Uang pembayaran kurang!'}), 400
+        
+    kembalian = uang_bayar - total_jual
+    tgl = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        # Potong Stok Barang
+        for item in items:
+            cursor.execute('UPDATE barang SET stok = stok - ? WHERE barcode = ?', (item['qty'], item['barcode']))
+        
+        # Catat Transaksi Keuangan
+        cursor.execute('''
+            INSERT INTO transaksi (tanggal, total_penjualan, total_laba, bayar, kembalian)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (tgl, total_jual, total_laba, uang_bayar, kembalian))
+        conn.commit()
+        
+    return jsonify({
+        'success': True,
+        'total': total_jual,
+        'laba': total_laba,
+        'bayar': uang_bayar,
+        'kembalian': kembalian,
+        'tanggal': tgl
+    })
+
+@app.route('/api/tambah-barang', methods=['POST'])
+def tambah_barang():
+    d = request.json
+    try:
+        with sqlite3.connect(DB_NAME) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO barang (barcode, nama, harga_modal, harga_jual, stok)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (d['barcode'].strip(), d['nama'], float(d['modal']), float(d['jual']), int(d['stok'])))
+            conn.commit()
+        return jsonify({'success': True, 'message': 'Barang baru berhasil disimpan ke database!'})
+    except sqlite3.IntegrityError:
+        return jsonify({'success': False, 'message': 'Barcode sudah terdaftar dalam sistem!'}), 400
+
+@app.route('/api/laporan', methods=['GET'])
+def get_laporan():
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT SUM(total_penjualan), SUM(total_laba) FROM transaksi')
+        t_data = cursor.fetchone()
+        cursor.execute('SELECT SUM(stok * harga_modal) FROM barang')
+        aset_modal = cursor.fetchone()[0] or 0
+        
+    return jsonify({
+        'omzet': t_data[0] or 0,
+        'laba_bersih': t_data[1] or 0,
+        'aset_stok': aset_modal
+    })
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Kasir POS Pro</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --success: #16a34a;
+            --text-color: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 20px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-scan {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.2rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th { background-color: #f8fafc; }
+
+        .checkout-box {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .total-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .input-bayar {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: var(--success);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { opacity: 0.95; }
+        .form-group { margin-bottom: 10px; }
+        .form-group input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANEL TRANSAKSI KASIR -->
+    <div class="card">
+        <h2>🛒 Kasir Penjualan</h2>
+        <input type="text" id="scanInput" class="input-scan" placeholder="Scan Barcode / Ketik Barcode + Enter..." autofocus>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Barang</th>
+                    <th>Harga</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="cartTable"></tbody>
+        </table>
+
+        <div class="checkout-box">
+            <div class="total-display">Total: Rp <span id="grandTotal">0</span></div>
+            <div class="form-group">
+                <input type="number" id="uangBayar" class="input-bayar" placeholder="Masukkan Uang Pembayaran (Rp)...">
+            </div>
+            <button class="btn" onclick="prosesBayar()">PROSES BAYAR & CETAK STRUK</button>
+        </div>
+    </div>
+
+    <!-- PANEL INPUT BARANG & KEUANGAN -->
+    <div>
+        <div class="card" style="margin-bottom: 20px;">
+            <h3>➕ Tambah Barang Baru</h3>
+            <div class="form-group"><input type="text" id="bCode" placeholder="Kode Barcode"></div>
+            <div class="form-group"><input type="text" id="bNama" placeholder="Nama Barang"></div>
+            <div class="form-group"><input type="number" id="bModal" placeholder="Harga Modal (Kulakan)"></div>
+            <div class="form-group"><input type="number" id="bJual" placeholder="Harga Jual"></div>
+            <div class="form-group"><input type="number" id="bStok" placeholder="Jumlah Stok"></div>
+            <button class="btn" style="background: var(--primary);" onclick="tambahBarang()">Simpan ke Database</button>
+        </div>
+
+        <div class="card">
+            <h3>📊 Ringkasan Usaha</h3>
+            <p><strong>Total Omzet:</strong> Rp <span id="laporanOmzet">0</span></p>
+            <p><strong>Laba Bersih:</strong> Rp <span id="laporanLaba">0</span></p>
+            <p><strong>Aset Tertahan di Stok:</strong> Rp <span id="laporanAset">0</span></p>
+            <button class="btn" style="background: #475569;" onclick="loadLaporan()">Refresh Laporan</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let keranjang = [];
+
+document.getElementById('scanInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        let code = this.value.trim();
+        if (code) scanItem(code);
+        this.value = '';
+    }
+});
+
+async function scanItem(barcode) {
+    try {
+        let res = await fetch('/api/scan', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({barcode: barcode})
+        });
+        let data = await res.json();
+        
+        if (data.success) {
+            let item = keranjang.find(i => i.barcode === barcode);
+            if (item) {
+                if (item.qty + 1 > data.item.stok) {
+                    alert('Jumlah melebihi stok yang tersedia!');
+                    return;
+                }
+                item.qty += 1;
+            } else {
+                keranjang.push({...data.item, qty: 1});
+            }
+            updateUI();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert('Gagal menghubungkan ke server.');
+    }
+}
+
+function hapusItem(index) {
+    keranjang.splice(index, 1);
+    updateUI();
+}
+
+function updateUI() {
+    let tbody = document.getElementById('cartTable');
+    tbody.innerHTML = '';
+    let total = 0;
+    
+    keranjang.forEach((item, idx) => {
+        let subtotal = item.harga_jual * item.qty;
+        total += subtotal;
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.nama}</td>
+                <td>Rp ${item.harga_jual.toLocaleString('id-ID')}</td>
+                <td>${item.qty}</td>
+                <td>Rp ${subtotal.toLocaleString('id-ID')}</td>
+                <td><button onclick="hapusItem(${idx})" style="color:red; cursor:pointer;">Hapus</button></td>
+            </tr>
+        `;
+    });
+    
+    document.getElementById('grandTotal').innerText = total.toLocaleString('id-ID');
+}
+
+async function prosesBayar() {
+    let bayar = parseFloat(document.getElementById('uangBayar').value);
+    let total = keranjang.reduce((sum, item) => sum + (item.harga_jual * item.qty), 0);
+    
+    if (keranjang.length === 0) return alert('Keranjang masih kosong!');
+    if (isNaN(bayar) || bayar < total) return alert('Jumlah uang bayar kurang!');
+    
+    let itemTransaksi = [...keranjang];
+    
+    let res = await fetch('/api/bayar', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({items: keranjang, bayar: bayar})
+    });
+    let data = await res.json();
+    
+    if (data.success) {
+        cetakStrukFisik(itemTransaksi, data);
+        keranjang = [];
+        document.getElementById('uangBayar').value = '';
+        updateUI();
+        loadLaporan();
+    } else {
+        alert(data.message);
+    }
+}
+
+function cetakStrukFisik(items, resData) {
+    let printWin = window.open('', '', 'width=400,height=600');
+    
+    let htmlStruk = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Cetak Nota</title>
+            <style>
+                @page { size: 58mm auto; margin: 0; }
+                body {
+                    font-family: 'Courier New', Courier, monospace;
+                    width: 58mm;
+                    margin: 0;
+                    padding: 8px;
+                    font-size: 11px;
+                }
+                .text-center { text-align: center; }
+                .text-right { text-align: right; }
+                .line { border-top: 1px dashed #000; margin: 6px 0; }
+                table { width: 100%; border-collapse: collapse; }
+                td { padding: 2px 0; vertical-align: top; }
+            </style>
+        </head>
+        <body>
+            <div class="text-center">
+                <strong>TOKO BERKAH POS</strong><br>
+                Jl. Raya Utama No. 88<br>
+                <small>${resData.tanggal}</small>
+            </div>
+            <div class="line"></div>
+            <table>
+    `;
+    
+    items.forEach(item => {
+        let subtotal = item.harga_jual * item.qty;
+        htmlStruk += `
+            <tr>
+                <td colspan="2"><strong>${item.nama}</strong></td>
+            </tr>
+            <tr>
+                <td>${item.qty} x ${item.harga_jual.toLocaleString('id-ID')}</td>
+                <td class="text-right">${subtotal.toLocaleString('id-ID')}</td>
+            </tr>
+        `;
+    });
+    
+    htmlStruk += `
+            </table>
+            <div class="line"></div>
+            <table>
+                <tr>
+                    <td>TOTAL:</td>
+                    <td class="text-right"><strong>Rp ${resData.total.toLocaleString('id-ID')}</strong></td>
+                </tr>
+                <tr>
+                    <td>BAYAR:</td>
+                    <td class="text-right">Rp ${resData.bayar.toLocaleString('id-ID')}</td>
+                </tr>
+                <tr>
+                    <td>KEMBALI:</td>
+                    <td class="text-right">Rp ${resData.kembalian.toLocaleString('id-ID')}</td>
+                </tr>
+            </table>
+            <div class="line"></div>
+            <div class="text-center">
+                <p>Terima Kasih Atas Kunjungan Anda!</p>
+            </div>
+            <script>
+                window.onload = function() {
+                    window.print();
+                    window.close();
+                }
+            <\/script>
+        </body>
+        </html>
+    `;
+    
+    printWin.document.write(htmlStruk);
+    printWin.document.close();
+}
+
+async function tambahBarang() {
+    let payload = {
+        barcode: document.getElementById('bCode').value,
+        nama: document.getElementById('bNama').value,
+        modal: document.getElementById('bModal').value,
+        jual: document.getElementById('bJual').value,
+        stok: document.getElementById('bStok').value
+    };
+    
+    if(!payload.barcode || !payload.nama || !payload.modal || !payload.jual || !payload.stok) {
+        return alert('Harap isi semua kolom data barang!');
+    }
+    
+    let res = await fetch('/api/tambah-barang', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    });
+    let data = await res.json();
+    alert(data.message);
+    
+    if(data.success) {
+        document.getElementById('bCode').value = '';
+        document.getElementById('bNama').value = '';
+        document.getElementById('bModal').value = '';
+        document.getElementById('bJual').value = '';
+        document.getElementById('bStok').value = '';
+        loadLaporan();
+    }
+}
+
+async function loadLaporan() {
+    let res = await fetch('/api/laporan');
+    let data = await res.json();
+    document.getElementById('laporanOmzet').innerText = data.omzet.toLocaleString('id-ID');
+    document.getElementById('laporanLaba').innerText = data.laba_bersih.toLocaleString('id-ID');
+    document.getElementById('laporanAset').innerText = data.aset_stok.toLocaleString('id-ID');
+}
+
+loadLaporan();
+</script>
+
+</body>
+</html>
